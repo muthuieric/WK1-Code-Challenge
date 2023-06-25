@@ -1,18 +1,30 @@
 
 // Function to calculate Payee (Tax) based on the provided tax rates
 function calculatePayee(grossSalary) {
-    let payee = 0;
-  
-    if (grossSalary <= 24000) {
-      payee = grossSalary * 0.1; // 10% tax rate
-    } else if (grossSalary <= 32333) {
-      payee = grossSalary * 0.25; // 25% tax rate
-    } else {
-      payee = grossSalary * 0.3; // 30% tax rate
-    }
-    
-    return payee;
+  const nssfDeductions = calculateNSSFDeductions(grossSalary);
+  const nhifDeductions = calculateNHIFDeductions(grossSalary);
+  taxablePay = grossSalary - nssfDeductions;
+  const taxBracket1 = 24000;
+  const taxBracket2 = 32333;
+  const taxRate1 = 0.1;
+  const taxRate2 = 0.25;
+  const taxRate3 = 0.3;
+  const personalRelief = 2400;
+  nhifDeductionsTax = nhifDeductions*0.15;
+
+  let payee = 0;
+
+  if (taxablePay <= taxBracket1) {
+    payee = taxablePay  * taxRate1; // 10% tax rate
+  } else if (taxablePay  <= taxBracket2) {
+    payee = ((taxablePay  - taxBracket1) * taxRate2) + (taxBracket1 * taxRate1); // 25% tax rate
+  } else {
+    payee = ((taxablePay  - taxBracket2) * taxRate3) + ((taxBracket2 - taxBracket1) * taxRate2) + (taxBracket1 * taxRate1); // 30% tax rate
   }
+
+  return payee - (nhifDeductionsTax + personalRelief);
+}
+
 
 // Function to calculate NHIF Deductions based on the provided NHIF rates
   function calculateNHIFDeductions(grossSalary) {
@@ -56,12 +68,11 @@ function calculatePayee(grossSalary) {
 // Function to calculate NSSF Deductions based on the provided NSSF rates
   function calculateNSSFDeductions(grossSalary) {
   if (grossSalary <= 6000) {
-    return grossSalary * 0.06;
-  } else if (grossSalary <= 18000) {
-    return 18000 * 0.06;
-  } else {
-    return 0; // No NSSF deductions for gross salaries above 18000
+    nssfDeductions = grossSalary * 0.06;
+  } else{
+    nssfDeductions =(18000 - 6000) * 0.06 + (6000 * 0.06);
   }
+  return nssfDeductions;
 }
 
 // Function to calculate the gross salary by adding the basic salary and benefits
@@ -76,7 +87,13 @@ function calculateNetSalary(basicSalary, benefits) {
     const nhifDeductions = calculateNHIFDeductions(grossSalary);
     const nssfDeductions = calculateNSSFDeductions(grossSalary);
     const netSalary = grossSalary - (payee + nhifDeductions + nssfDeductions);
-    return `Net Salary: ${netSalary}Ksh`;
+    return {
+      grossSalary: grossSalary,
+      netSalary: netSalary,
+      nhifDeductions: nhifDeductions,
+      nssfDeductions: nssfDeductions,
+      payee: payee
+    };
 }
 
-console.log(calculateNetSalary(20000, 600));
+console.log(calculateNetSalary(52500, 0));
